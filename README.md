@@ -72,11 +72,14 @@ curl -fsSL https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orche
 #### Удаление
 
 Если вы решите удалить правила оркестрации:
-```powershell
-# Windows
-Invoke-RestMethod -Uri "https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orchestration-framework/main/uninstall.ps1" | Set-Content -Path uninstall.ps1; powershell -ExecutionPolicy Bypass -File uninstall.ps1; Remove-Item uninstall.ps1
 
-# Linux / macOS
+##### Windows (PowerShell)
+```powershell
+Invoke-RestMethod -Uri "https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orchestration-framework/main/uninstall.ps1" | Set-Content -Path uninstall.ps1; powershell -ExecutionPolicy Bypass -File uninstall.ps1; Remove-Item uninstall.ps1
+```
+
+##### Linux / macOS (Bash)
+```bash
 curl -fsSL https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orchestration-framework/main/uninstall.sh | bash
 ```
 
@@ -173,11 +176,14 @@ curl -fsSL https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orche
 #### Uninstallation
 
 If you decide to remove the orchestration rules:
-```powershell
-# Windows
-Invoke-RestMethod -Uri "https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orchestration-framework/main/uninstall.ps1" | Set-Content -Path uninstall.ps1; powershell -ExecutionPolicy Bypass -File uninstall.ps1; Remove-Item uninstall.ps1
 
-# Linux / macOS
+##### Windows (PowerShell)
+```powershell
+Invoke-RestMethod -Uri "https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orchestration-framework/main/uninstall.ps1" | Set-Content -Path uninstall.ps1; powershell -ExecutionPolicy Bypass -File uninstall.ps1; Remove-Item uninstall.ps1
+```
+
+##### Linux / macOS (Bash)
+```bash
 curl -fsSL https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orchestration-framework/main/uninstall.sh | bash
 ```
 
