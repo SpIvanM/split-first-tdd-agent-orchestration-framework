@@ -145,6 +145,26 @@ Description: Русская постановка задачи, принципы,
 - `.codex/skills/task-splitting/SKILL.md` - доступная для Codex копия skill.
 - `tests/Validate-AgentPack.ps1` - валидатор репозитория.
 
+
+## Установка
+
+Вы можете установить или обновить правила в своем проекте с помощью скриптов установки. Скрипты инъектируют инструкции воркфлоу в файлы AGENTS.md, CLAUDE.md и GEMINI.md, сохраняя при этом ваши собственные правила.
+
+### Windows (PowerShell)
+
+`powershell
+Invoke-RestMethod -Uri "https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orchestration-framework/main/install.ps1" | Set-Content -Path install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1; Remove-Item install.ps1
+`
+
+### Linux / macOS (Bash)
+
+`ash
+curl -fsSL https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orchestration-framework/main/install.sh | bash
+`
+
+> [!IMPORTANT]
+> Скрипты используют маркеры <!-- ORCHESTRATION_START --> и <!-- ORCHESTRATION_END -->. Все, что находится внутри этих маркеров, будет перезаписано при обновлении. Ваши собственные правила добавляйте выше или ниже этих маркеров.
+
 ## Как использовать
 
 - Codex: загружай skill `task-splitting` и держи работу на максимально маленьком срезе.
