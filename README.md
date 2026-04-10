@@ -1,177 +1,106 @@
 <!--
 Name: Пакет оркестрации агентов
-Description: Русская постановка задачи, принципы, режимы split и split2, и критерии приемки для split-first оркестрации в Codex, Gemini CLI, Claude Code и Antigravity.
+Description: Канонический README для split-first воркфлоу. Содержит принципы декомпозиции, инструкции по установке и контракт взаимодействия агентов.
 -->
 
-# Пакет оркестрации агентов
+# 🧩 Split-First Agent Orchestration Framework
 
-Этот репозиторий фиксирует канонические правила для split-first workflow: как дробить большие задачи, как отправлять подзадачи в другой CLI, как делать предварительную ревизию плана и как проверять результат перед слиянием.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Status: Production](https://img.shields.io/badge/Status-Production-green.svg)](#)
+[![Workflow: TDD](https://img.shields.io/badge/Workflow-TDD-blue.svg)](#)
 
-## Постановка задачи
+> **EN**: A canonical set of rules for reliable task decomposition, subtask dispatch, and pre-release plan review.
+> **RU**: Канонический набор правил для надежной декомпозиции задач, диспетчеризации и предварительной ревизии планов.
 
-Сделать переиспользуемый набор правил, который помогает агенту:
+---
 
-- оценивать, нужно ли дробить большую задачу
-- превращать задачу в независимые карточки подзадач
-- передавать эти карточки нужному подагенту или CLI-точке входа
-- формировать для каждой подзадачи развернутый prompt packet
-- использовать TDD для подзадач, меняющих код
-- проверять итоговый diff перед слиянием
+## 📖 Contents / Оглавление
+- [Overview / Обзор](#-overview--обзор)
+- [Installation / Установка](#-installation--установка)
+- [Workflow / Процесс](#-workflow--процесс)
+- [Modes / Режимы](#-modes--режимы)
+- [Project Structure / Структура проекта](#-project-structure--структура-проекта)
+- [Adopters / Адаптеры](#-adopters--адаптеры)
 
-Это слой координации, а не продуктовая функция и не общий планировщик.
+---
 
-## Проблема
+## 🌟 Overview / Обзор
 
-Большие задачи на код ломаются, когда один агент пытается сделать все за один проход. Типовые сбои:
+**EN**: Large coding tasks break when a single agent tries to do everything at once. This framework enforces a **split-first** workflow: decompose before implement, test before merge.
+**RU**: Большие задачи ломаются, когда агент пытается сделать всё за один проход. Этот фреймворк навязывает **split-first** воркфлоу: декомпозиция перед реализацией, тесты перед слиянием.
 
-Особенно это заметно в двух местах:
-- маленькие лимиты дорогих моделей
-- замусоренный контекст при последовательном исполнении
+### Why Split-First? / Почему Split-First?
+- 🧠 **Context Hygiene**: Keeps agent focus sharp on small units. / Чистота контекста: фокус на малых задачах.
+- 🛡️ **TDD First**: Mandatory tests for every implementation code change. / TDD по умолчанию: обязательные тесты.
+- 🤝 **Multi-Agent**: Dispatch tasks between different LLMs and CLI tools. / Мульти-агентность: делегирование между моделями.
 
-- размывание контекста
-- поверхностное рассуждение
-- неверные предположения о состоянии репозитория
-- случайное параллельное редактирование одних и тех же строк
-- отсутствие или слабость тестов
-- самоуверенные ответы без проверки
-- дублирование работы, потому что задачу не разделили по поведению
-- слишком короткие промпты, из-за которых исполнитель не видит границы, тесты и критерии приемки
+---
 
-## Цели
+## 🚀 Installation / Установка
 
-Главная цель: поднять продуктивность агента внутри отведенного лимита за счет промпт-самоинженерии, снижения когнитивной нагрузки, управления контекстом, детального планирования и декомпозиции. Допустимы планы до 30 пунктов. TDD обязателен для implementation-подзадач.
-
-- снизить число ошибок на крупных кодовых задачах
-- повысить глубину рассуждения за счет декомпозиции
-- разделить чтение и запись по разным подзадачам
-- сделать TDD режимом по умолчанию для implementation-подзадач
-- создать одинаковую рабочую модель для Codex, Gemini CLI, Claude Code и Antigravity
-- держать каноническую политику в одном месте
-- сделать делегирование явным и проверяемым
-- добавить предрелизную ревизию плана перед запуском, если задача рискованная или широкая
-
-## Принципы
-
-- Дробить по поведению, а не по числу файлов.
-- Предпочитать одного владельца на одну подзадачу.
-- Не параллелить пересекающиеся записи.
-- Использовать read-heavy подзадачи для исследования, ревью и воспроизведения ошибок.
-- Использовать write-heavy подзадачи только при раздельной ответственности.
-- Применять TDD для каждой implementation-подзадачи.
-- Держать каждую подзадачу достаточно маленькой для одного цикла red-green-refactor.
-- Опираться на факты из репозитория, а не на память.
-- Останавливаться, если требования неоднозначны.
-- Сначала проверять узко, потом шире.
-- Для `split2` сначала ревьюить и улучшать план, и только потом запускать исполнение.
-
-## Режимы
-
-### `/split`
-
-- Используется, когда план уже достаточно надежен для прямого запуска.
-- Хост разбивает задачу на подзадачи.
-- Каждая implementation-подзадача получает полный prompt packet.
-- Подзадачи исполняются во внешнем CLI другой платформы.
-- После исполнения хост контролирует результаты и собирает итог.
-
-### `/split2`
-
-- Используется, когда полный план нужно сначала отправить на ревизию и доработку.
-- Хост сначала делает decomposition, затем отправляет план на ревизию в модель другой платформы.
-- После ревизии хост обновляет план и только потом запускает подзадачи.
-- Каждая implementation-подзадача все равно идет через TDD.
-
-### Матрица запуска
-
-| Хост | `/split` executor | `/split2` reviewer | `/split2` executor |
-| --- | --- | --- | --- |
-| Codex | Gemini 3 Flash | Gemini 3.1 Pro high | Gemini 3 Flash |
-| Gemini | Codex GPT-5.4-mini super high | Codex GPT-5.4 xHigh | Codex GPT-5.4-mini super high |
-
-## Техническое задание
-
-Набор должен следовать такой структуре:
-
-- AGENTS.md является источником истины.
-- `GEMINI.md` и `CLAUDE.md` - это адаптеры, а не самостоятельные политики.
-- `references/orchestration-matrix.md` описывает матрицу хостов, executor и reviewer для `split` и `split2`.
-- `references/subtask-prompt-template.md` задает prompt packet для каждой implementation-подзадачи.
-- `references/plan-review-template.md` задает prompt packet для предварительной ревизии плана.
-- `agents/skills/task-splitting/SKILL.md` задает переиспользуемый контракт декомпозиции.
-- `.claude/agents/*.md` задает одноцелевых подагентов.
-- `.gemini/commands/*.toml` задает повторяемые slash-команды для планирования, дробления, ревью, исправления и тестирования.
-- `.codex/skills/task-splitting/SKILL.md` открывает тот же контракт декомпозиции для Codex-visible skill loading.
-- Планировщик решает, нужно ли делить задачу.
-- Диспетчер превращает решение о разбиении в исполнимые карточки подзадач.
-- Верификатор проверяет diff, тесты и остаточный риск.
-- Поток выполнения: split -> dispatch -> verify; planner -> dispatcher -> verifier.
-- Две подзадачи не должны параллельно редактировать одни и те же строки.
-- Каждая implementation-подзадача должна содержать goal, context, scope, non-goals, files, dependencies, tests, acceptance criteria, output format и stop conditions.
-- Для `split2` план должен пройти предварительную ревизию и доработку до запуска.
-
-## Требования к задаче
-
-Этот набор решает проблему повышения точности и повторяемости работы агента через split-first workflow. Реализация должна:
-
-- определять, слишком ли широка задача для одного прохода
-- строить компактный граф подзадач, если разбиение полезно
-- направлять read-heavy работу в анализирующие подагенты
-- направлять write-heavy работу только в непересекающиеся области
-- принуждать к test-first циклу для изменений в коде
-- завершаться проходом reviewer и явными командами верификации
-- для `split2` включать предварительный review pass до dispatch
-
-## Критерии приемки
-
-- Большую задачу можно оценить на предмет разбиения за один проход.
-- Разбитая задача дает независимые карточки подзадач с владельцами, файлами, тестами и done_when.
-- Implementation-подзадачи можно выполнять маленькими TDD-циклами.
-- Итоговая верификация возвращает точные команды и результаты.
-- В репозитории есть одна каноническая политика и зеркальные адаптеры для разных инструментов.
-- README объясняет проблему, цели, принципы, режимы split и split2 и техническое задание без скрытого контекста.
-- `split2` не запускает подзадачи до завершения ревизии плана.
-
-## Файлы
-
-- `AGENTS.md` - канонический контракт репозитория.
-- `GEMINI.md` - адаптер для Gemini CLI.
-- `CLAUDE.md` - адаптер для Claude Code.
-- `references/orchestration-matrix.md` - матрица запуска.
-- `references/subtask-prompt-template.md` - шаблон prompt packet для implementation-подзадачи.
-- `references/plan-review-template.md` - шаблон prompt packet для ревизии плана.
-- `agents/skills/task-splitting/SKILL.md` - переиспользуемый skill для декомпозиции.
-- `.claude/agents/*.md` - подагенты Claude.
-- `.gemini/commands/*.toml` - slash-команды Gemini.
-- `.codex/skills/task-splitting/SKILL.md` - доступная для Codex копия skill.
-- `tests/Validate-AgentPack.ps1` - валидатор репозитория.
-
-
-## Установка
-
-Вы можете установить или обновить правила в своем проекте с помощью скриптов установки. Скрипты инъектируют инструкции воркфлоу в файлы AGENTS.md, CLAUDE.md и GEMINI.md, сохраняя при этом ваши собственные правила.
+**EN**: Inject orchestration rules into your project while preserving your own custom instructions.
+**RU**: Внедрите правила оркестрации в свой проект, сохраняя собственные инструкции.
 
 ### Windows (PowerShell)
-
 `powershell
 Invoke-RestMethod -Uri "https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orchestration-framework/main/install.ps1" | Set-Content -Path install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1; Remove-Item install.ps1
 `
 
 ### Linux / macOS (Bash)
-
 `ash
 curl -fsSL https://raw.githubusercontent.com/SpIvanM/split-first-tdd-agent-orchestration-framework/main/install.sh | bash
 `
 
 > [!IMPORTANT]
-> Скрипты используют маркеры <!-- ORCHESTRATION_START --> и <!-- ORCHESTRATION_END -->. Все, что находится внутри этих маркеров, будет перезаписано при обновлении. Ваши собственные правила добавляйте выше или ниже этих маркеров.
+> **EN**: Rules are wrapped in <!-- ORCHESTRATION_START --> markers. Updates only affect marked content.
+> **RU**: Правила обернуты в маркеры <!-- ORCHESTRATION_START -->. Обновления затронут только помеченный контент.
 
-## Как использовать
+---
 
-- Codex: загружай skill `task-splitting` и держи работу на максимально маленьком срезе.
-- Gemini CLI: используй `/split` для прямого запуска и `/split2` для запуска после внешней ревизии плана.
-- Claude Code: сначала `orchestrator`, затем `planner`, `plan-reviewer`, `tester`, `debugger` или `reviewer`.
-- Antigravity: используй тот же split-first контракт, ту же матрицу запуска и тот же чеклист верификации.
+## 🛠 Workflow / Процесс
 
-## Правило редактирования
+`mermaid
+graph TD
+    Start[User Request] --> Planner{Need Split?}
+    Planner -- No --> Implementation[Direct Implementation]
+    Planner -- Yes --> Decompose[Decomposition / Split]
+    Decompose --> Dispatch[Subtask Dispatch]
+    Dispatch --> TDD[TDD Implementation Loop]
+    TDD --> Verify[Verification / Review]
+    Verify --> Merge[Final Merge]
+`
 
-Сначала обновляй AGENTS.md, затем зеркаль intent в provider-specific файлы.
+---
+
+## 🕹 Modes / Режимы
+
+### /split
+- **EN**: Direct dispatch for reliable plans. / Прямая диспетчеризация надежных планов.
+- **RU**: Разбиение на подзадачи и мгновенный запуск исполнения.
+
+### /split2
+- **EN**: Review-before-dispatch for complex tasks. / Ревизия плана перед запуском для сложных задач.
+- **RU**: Декомпозиция -> Ревизия плана внешней моделью -> Исполнение.
+
+---
+
+## 📁 Project Structure / Структура проекта
+
+- AGENTS.md: Source of truth / Источник истины.
+- CLAUDE.md / GEMINI.md: Platform adapters / Адаптеры платформ.
+- eferences/: Templates for prompts and reviews / Шаблоны промптов.
+- .claude/ / .gemini/: Custom agent roles and slash-commands / Роли и команды.
+
+---
+
+## 🤖 Adopters / Адаптеры
+
+- **Antigravity**: Native split-first support.
+- **Gemini CLI**: /split, /split2, /review, /test.
+- **Claude Code**: Specialized subagents (orchestrator, planner, 	ester).
+
+---
+
+## 📝 License
+
+Distributed under the MIT License. See LICENSE for more information.
