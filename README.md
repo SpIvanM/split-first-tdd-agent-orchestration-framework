@@ -111,26 +111,38 @@ graph TD
     H -- "Да" --> I["5. Ревизия"]
     I --> J["6. Исполнение"]
     H -- "Нет" --> J
-  
+    
+    T["Re-plan"] --> F
+    
     J --> K["Выбор задачи"]
-    K --> L["Получение контекста"]
-  
-    subgraph "Субагент"
-        L --> M["Fail тест"]
-        M --> N["Код"]
-        N --> O{"Local Green?"}
-        O -- "No (Retry)" --> N
-        O -- "Fail / Max Retries" --> T["Re-plan"]
-        O -- "Yes" --> P["Слияние в регресс"]
-        P --> Q{"Project Green?"}
-        Q -- "No (Retry)" --> N
-        Q -- "Fail / Max Retries" --> T
+    K --> L["Контекст"]
+    
+    subgraph "TDD + Регрессия"
+        L
+        M
+        N
+        O
+        O1
+        P
+        Q
+        Q1
     end
-  
-    Q -- "Yes" --> R{"Завершено?"}
+    
+    L --> M["Fail тест"]
+    M --> N["Код"]
+    N --> O{"Local Green?"}
+    O -- "No" --> O1{"> 10 ит.?"}
+    O1 -- "Нет" --> N
+    O1 -- "Да" --> T
+    O -- "Yes" --> P["Слияние"]
+    P --> Q{"Project Green?"}
+    Q -- "No" --> Q1{"> 10 ит.?"}
+    Q1 -- "Нет" --> N
+    Q1 -- "Да" --> T
+    
+    Q -- "Yes" --> R{"Финиш?"}
     R -- "No" --> K
-    T --> F
-  
+    
     R -- "Yes" --> U["Итоговый регресс"]
     U --> W{"Успех?"}
     W -- "No" --> T
