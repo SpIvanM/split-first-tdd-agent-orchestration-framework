@@ -1,0 +1,15 @@
+# Name: Gemini Test Command
+# Description: Discover and run the narrowest useful verification for the current changes.
+description = "Discover and run the narrowest useful verification for the current changes."
+prompt = """
+Use the repo contract in @AGENTS.md.
+Determine the narrowest useful tests for the current workspace state.
+
+Output:
+- discovered test command(s)
+- why they are the narrowest useful choice
+- exact expected failure or success criteria
+- anything still unverified
+
+If the repo has no test runner yet, say so and propose the minimal verification command to add next.
+"""

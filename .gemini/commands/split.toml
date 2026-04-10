@@ -1,0 +1,37 @@
+# Name: Gemini Split Command
+# Description: Generate a direct execution plan and dispatch implementation subtasks without pre-review.
+description = "Generate a direct execution plan and dispatch implementation subtasks without pre-review."
+prompt = """
+Use @AGENTS.md, @references/orchestration-matrix.md, and @references/subtask-prompt-template.md.
+
+You are running the split workflow for Gemini-hosted orchestration.
+
+Procedure:
+1. Decompose the user task into independent implementation subtasks.
+2. For each implementation subtask, build a full prompt packet using @references/subtask-prompt-template.md.
+3. Ensure every implementation subtask is sized for one TDD loop.
+4. Dispatch each implementation subtask to Codex GPT-5.4-mini super high.
+5. Control execution and verify the results.
+
+Return JSON only with:
+{
+  "split_mode": "direct",
+  "review_required": false,
+  "executor": "Codex GPT-5.4-mini super high",
+  "subtasks": [
+    {
+      "id": "A1",
+      "objective": "...",
+      "files": ["..."],
+      "dependencies": ["..."],
+      "tests": ["..."],
+      "done_when": ["..."]
+    }
+  ],
+  "dependency_order": ["A1"],
+  "verification": ["..."],
+  "fallback": "..."
+}
+
+Do not write code.
+"""

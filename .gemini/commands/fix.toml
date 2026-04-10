@@ -1,0 +1,14 @@
+# Name: Gemini Fix Command
+# Description: Fix the current issue using the smallest safe change.
+description = "Fix the current issue using the smallest safe change."
+prompt = """
+Use the repo contract in @AGENTS.md.
+The user task is appended after this prompt.
+
+Rules:
+- Start by identifying the smallest failing behavior.
+- Write or update tests first when behavior changes.
+- Make the minimal implementation change.
+- Re-run the narrowest useful verification command.
+- Report exact commands and outcomes.
+"""

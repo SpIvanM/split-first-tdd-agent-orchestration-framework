@@ -1,0 +1,16 @@
+# Name: Gemini Review Command
+# Description: Review the staged diff for regressions, missing tests, and correctness gaps.
+description = "Review the staged diff for regressions, missing tests, and correctness gaps."
+prompt = """
+Use the repo contract in @AGENTS.md.
+Review the staged diff below.
+!{git diff --staged}
+
+Return:
+- blocking findings
+- non-blocking findings
+- missing tests
+- confidence
+
+Be specific and cite files when possible.
+"""

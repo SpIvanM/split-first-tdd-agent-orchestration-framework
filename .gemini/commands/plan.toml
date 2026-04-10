@@ -1,0 +1,34 @@
+# Name: Gemini Plan Command
+# Description: Assess whether the current task should be split before implementation.
+description = "Assess whether the current task should be split before implementation."
+prompt = """
+Use the repo contract in @AGENTS.md.
+
+You are the planning pass for a coding task.
+The user task is appended after this prompt.
+
+First decide whether the task should be split.
+Return JSON only with this shape:
+{
+  "split_recommended": true|false,
+  "reason": "...",
+  "dependencies": ["..."],
+  "subtasks": [
+    {
+      "id": "A1",
+      "goal": "...",
+      "owner": "planner|implementer|tester|reviewer",
+      "files": ["..."],
+      "tests": ["..."],
+      "risks": ["..."],
+      "done_when": ["..."]
+    }
+  ],
+  "merge_order": ["A1", "A2"],
+  "verification": ["..."],
+  "fallback": "..."
+}
+
+If split_recommended is false, give a single-thread plan in subtasks[0].
+Do not edit files.
+"""

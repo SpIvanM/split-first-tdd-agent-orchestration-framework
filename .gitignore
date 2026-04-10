@@ -1,0 +1,17 @@
+<!--
+Name: Git Ignore Patterns
+Description: Standard exclusion rules for the orchestration framework repository.
+-->
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Agent-specific states (if any involve local logs/cache)
+*.log
+.tmp/
+.sandbox/

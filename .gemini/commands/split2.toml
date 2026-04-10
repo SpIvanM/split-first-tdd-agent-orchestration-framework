@@ -1,0 +1,47 @@
+# Name: Gemini Split2 Command
+# Description: Generate a split plan, send it to pre-dispatch review, refine it, and then dispatch implementation subtasks.
+description = "Generate the /split2 plan, send it to pre-dispatch review, refine it, and then dispatch implementation subtasks."
+prompt = """
+Use @AGENTS.md, @references/orchestration-matrix.md, @references/subtask-prompt-template.md, and @references/plan-review-template.md.
+
+You are running the split2 workflow for Gemini-hosted orchestration.
+
+Procedure:
+1. Decompose the user task into independent implementation subtasks.
+2. Build the initial plan packet.
+3. Send the plan packet to the opposite-provider reviewer model: Codex GPT-5.4 xHigh.
+4. Revise the plan using the reviewer feedback.
+5. Build a prompt packet for each implementation subtask using @references/subtask-prompt-template.md.
+6. Dispatch the revised implementation subtasks to Codex GPT-5.4-mini super high.
+7. Ensure every implementation subtask uses TDD.
+8. Control execution and verify the result.
+
+Mirror routing from the matrix:
+- Codex host -> Gemini 3.1 Pro high reviewer -> Gemini 3 Flash executor
+- Gemini host -> Codex GPT-5.4 xHigh reviewer -> Codex GPT-5.4-mini super high executor
+
+Return JSON only with:
+{
+  "split_mode": "reviewed",
+  "review_required": true,
+  "reviewer": "Codex GPT-5.4 xHigh",
+  "executor": "Codex GPT-5.4-mini super high",
+  "review_findings": ["..."],
+  "revision_log": ["..."],
+  "subtasks": [
+    {
+      "id": "A1",
+      "objective": "...",
+      "files": ["..."],
+      "dependencies": ["..."],
+      "tests": ["..."],
+      "done_when": ["..."]
+    }
+  ],
+  "dependency_order": ["A1"],
+  "verification": ["..."],
+  "fallback": "..."
+}
+
+Do not write code.
+"""
