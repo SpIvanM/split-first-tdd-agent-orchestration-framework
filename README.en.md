@@ -115,21 +115,23 @@ graph TD
             L --> M["Fail Test"]
             M --> N["Code"]
             N --> O{"Local Green?"}
-            O -- "No" --> N
+            O -- "No (Retry)" --> N
+            O -- "Max Retries" --> T["Re-plan"]
             O -- "Yes" --> P["Merge to Regression"]
             P --> Q{"Project Green?"}
-            Q -- "No" --> N
+            Q -- "No (Retry)" --> N
+            Q -- "Max Retries" --> T
         end
         
         Q -- "Yes" --> R{"Complete?"}
         R -- "No" --> K
-        
-        L -- "Error" --> T["Re-plan"]
         T --> F
     end
     
     R -- "Yes" --> U["Final Regression"]
-    U --> V["Merge"]
+    U --> W{"Success?"}
+    W -- "No" --> T
+    W -- "Yes" --> V["Merge"]
 ```
 
 ### 📦 Prompt Packet Format

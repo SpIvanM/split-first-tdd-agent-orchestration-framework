@@ -120,21 +120,23 @@ graph TD
             L --> M["Fail тест"]
             M --> N["Код"]
             N --> O{"Local Green?"}
-            O -- "No" --> N
+            O -- "No (Retry)" --> N
+            O -- "Fail / Max Retries" --> T["Re-plan"]
             O -- "Yes" --> P["Слияние в регресс"]
             P --> Q{"Project Green?"}
-            Q -- "No" --> N
+            Q -- "No (Retry)" --> N
+            Q -- "Fail / Max Retries" --> T
         end
         
         Q -- "Yes" --> R{"Завершено?"}
         R -- "No" --> K
-        
-        L -- "Error" --> T["Re-plan"]
         T --> F
     end
     
     R -- "Yes" --> U["Итоговый регресс"]
-    U --> V["Merge"]
+    U --> W{"Успех?"}
+    W -- "No" --> T
+    W -- "Yes" --> V["Merge"]
 ```
 
 ### 📦 Формат prompt packet
