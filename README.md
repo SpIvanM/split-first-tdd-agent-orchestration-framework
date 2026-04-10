@@ -106,38 +106,38 @@ graph TD
     classDef terminator fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
     classDef error fill:#ffebee,stroke:#c62828,stroke-width:1px
 
-    StartNode(["Новая задача"]) --> SplitDec{"Требуется декомпозиция?"}
+    StartNode(["Новая<br>задача"]) --> SplitDec{"Требуется<br>декомпозиция?"}
     
-    SplitDec -- "Нет" --> Direct["Прямое выполнение"]
-    Direct --> QueueCheck{"Есть задачи в очереди?"}
+    SplitDec -- "Нет" --> Direct["Прямое<br>выполнение"]
+    Direct --> QueueCheck{"Есть<br>задачи<br>в<br>очереди?"}
     
-    SplitDec -- "Да" --> Plan1["1. Анализ сути задачи"]
+    SplitDec -- "Да" --> Plan1["1.<br>Анализ<br>сути<br>задачи"]
     
     subgraph Phase1 ["Фаза 1: Оркестрация и Планирование"]
-        Plan1 --> Plan2["2. Выбор архитектуры"]
-        Plan2 --> Plan3["3. Формирование Плана v1"]
-        Plan3 --> Plan4["4. Создание Prompt Packets"]
-        Plan4 --> Split2Dec{"Нужна ревизия плана?"}
-        Split2Dec -- "Да" --> Plan5["5. Ревизия плана другой моделью"]
-        Plan5 --> Plan6["6. Утверждение списка задач"]
+        Plan1 --> Plan2["2.<br>Выбор<br>архитектуры"]
+        Plan2 --> Plan3["3.<br>Формирование<br>Плана<br>v1"]
+        Plan3 --> Plan4["4.<br>Создание<br>Prompt<br>Packets"]
+        Plan4 --> Split2Dec{"Нужна<br>ревизия<br>плана?"}
+        Split2Dec -- "Да" --> Plan5["5.<br>Ревизия<br>плана<br>другой<br>моделью"]
+        Plan5 --> Plan6["6.<br>Утверждение<br>списка<br>задач"]
         Split2Dec -- "Нет" --> Plan6
     end
     
     Plan6 --> QueueCheck
     
     subgraph Phase2 ["Фаза 2: Исполнение и Контроль"]
-        TaskSelect["Выбор следующей подзадачи"]
-        ContextInit["Инициализация свежего контекста"]
+        TaskSelect["Выбор<br>следующей<br>подзадачи"]
+        ContextInit["Инициализация<br>свежего<br>контекста"]
         
         subgraph SubAgent ["Цикл Субагента: TDD"]
-            RedPhase["Red: Написание теста"]
-            GreenPhase["Green: Написание кода"]
-            LocalTest{"Локальные тесты пройдены?"}
-            LocalRetry{"> 10 попыток?"}
+            RedPhase["Red:<br>Написание<br>теста"]
+            GreenPhase["Green:<br>Написание<br>кода"]
+            LocalTest{"Локальные<br>тесты<br>пройдены?"}
+            LocalRetry{"><br>10<br>попыток?"}
             
-            MergeWork["Слияние в рабочую ветку"]
-            GlobalTest{"Тесты проекта пройдены?"}
-            GlobalRetry{"> 10 попыток?"}
+            MergeWork["Слияние<br>в<br>рабочую<br>ветку"]
+            GlobalTest{"Тесты<br>проекта<br>пройдены?"}
+            GlobalRetry{"><br>10<br>попыток?"}
             
             RedPhase --> GreenPhase
             GreenPhase --> LocalTest
@@ -154,19 +154,19 @@ graph TD
     TaskSelect --> ContextInit
     ContextInit --> RedPhase
     
-    Replan["♻️ Re-plan (Смена плана)"]
+    Replan["♻️<br>Re-plan<br>(Смена<br>плана)"]
     LocalRetry -- "Да" --> Replan
     GlobalRetry -- "Да" --> Replan
     GlobalTest -- "Да" --> QueueCheck
     
     Replan --> Plan3
     
-    QueueCheck -- "Нет" --> FinalRegression["Итоговый полный регресс"]
+    QueueCheck -- "Нет" --> FinalRegression["Итоговый<br>полный<br>регресс"]
     
     subgraph Phase3 ["Фаза 3: Финал"]
-        FinalRegression --> AllTestsSuccess{"Все тесты успешны?"}
+        FinalRegression --> AllTestsSuccess{"Все<br>тесты<br>успешны?"}
         AllTestsSuccess -- "Нет" --> Replan
-        AllTestsSuccess -- "Да" --> FinishNode(["Merge Ready (Успех)"])
+        AllTestsSuccess -- "Да" --> FinishNode(["Merge<br>Ready<br>(Успех)"])
     end
 
     class Direct,Plan1,Plan2,Plan3,Plan4,Plan5,Plan6,TaskSelect,ContextInit,RedPhase,GreenPhase,MergeWork,FinalRegression process
