@@ -72,13 +72,14 @@ Specific sub-goals:
 - Use read-heavy subtasks for investigation and error reproduction.
 - Use write-heavy subtasks only with separate responsibility.
 - Apply TDD for every implementation subtask (red-green-refactor cycle).
+- **Unified Growing Regression Test**: Each subtask adds its tests to a common suite. After each execution cycle, the entire regression package must be "green".
 - Rely on repository facts, not memory.
 - Verify narrow first, then broad.
 
 ### 🕹 Modes
 
-- **`/split`**: Used when the plan is reliable. The planner splits the task into subtasks with full prompt packets and dispatches them.
-- **`/split2`**: The plan is first sent for review to a model on another platform, updated, and only then the subtasks are launched.
+- **`/split`**: Used when the plan is reliable. The process includes: task reformulation -> architecture design -> plan v1 creation (task list) -> detailed task texts (Prompt Packets) -> sequential dispatch.
+- **`/split2`**: The plan and task texts are first sent for review and improvement to a model on another platform. The improved result immediately enters execution without additional approval rounds.
 
 **Cross-platform review principle:** models from the same platform share common blind spots (training data biases, stylistic habits). Review by a different platform's model catches errors that "your own" reviewer would miss.
 
@@ -95,23 +96,41 @@ Specific sub-goals:
 #### Workflow Diagram
 
 ```mermaid
-flowchart LR
-    A["Task from\nuser"] --> B{"Needs\nsplitting?"}
-    B -- No --> C["Execute\ndirectly"]
-    B -- Yes --> D{"Mode?"}
-    D -- "/split" --> E["Create\nplan file"]
-    D -- "/split2" --> F["Create\nplan file"]
-    F --> G["Plan review\n(cross-platform)"]
-    G --> H{"Accepted?"}
-    H -- No --> F
-    H -- Yes --> E
-    E --> I["Dispatch\nsubtasks"]
-    I --> J["Execution\n(TDD)"]
-    J --> K["Result\nverification"]
-    K --> L{"Errors?"}
-    L -- No --> M["Merge"]
-    L -- Yes --> N["Re-planning"]
-    N --> E
+graph TD
+    A["Task from user"] --> B{"Split mode activated?"}
+    B -- "No" --> C["Execute directly"]
+    B -- "Yes" --> D["1. Task reformulation (essence, detail)"]
+    D --> E["2. Design and architectural decisions"]
+    E --> F["3. Create plan v1 (task list)"]
+    F --> G["4. Generate detailed task texts"]
+    G --> H{"Split2 mode activated?"}
+    H -- "Yes" --> I["5. Revision and improvement"]
+    I --> J["6. Sequential execution cycle"]
+    H -- "No" --> J
+    
+    subgraph "Execution Cycle (Main Agent)"
+        J --> K["Get next task"]
+        K --> L["Launch sub-agent"]
+        
+        subgraph "Internal TDD Cycle"
+            L --> M["Local failing test"]
+            M --> N["Implementation"]
+            N --> O["Local green test"]
+            O --> M
+        end
+        
+        O --> P["Merge tests into regression suite"]
+        P --> Q["Run unified regression test (Green)"]
+        
+        Q --> R{"Success?"}
+        R -- "Yes" --> S{"Last task?"}
+        S -- "No" --> K
+        R -- "No" --> T["Re-planning"]
+        T --> F
+    end
+    
+    S -- "Yes" --> U["Final verification (Suite Green)"]
+    U --> V["Merge / Complete"]
 ```
 
 ### 📦 Prompt Packet Format
@@ -138,11 +157,12 @@ Full template: `references/subtask-prompt-template.md`.
 
 ### 🔄 Execution Order and Dependencies
 
-1. **Read-first:** read-heavy subtasks (investigation, reproduction, context gathering) are launched first.
-2. **Write after read:** write-heavy subtasks are launched only after related read tasks complete.
-3. **Sequential on overlap:** subtasks touching the same file are executed strictly sequentially.
-4. **Parallel on separation:** subtasks with non-overlapping files and modules may run in parallel.
-5. **Dependency graph** is described in the plan file; dispatch follows this graph.
+1. **Planning**: Before forming the task list, a deep reformulation of the request (essence, detail) and selection of architectural solutions are performed.
+2. **Detailing**: A plan is not just a list, but a set of detailed textual descriptions for each task (Prompt Packets). In `split2` mode, this set is improved as a whole.
+3. **Sequential Cycle**: The main agent runs sub-agents one by one.
+4. **Internal TDD**: A sub-agent within its pass runs a failing test, fixes the code, and achieves test passage.
+5. **Growing Regression**: After a subtask succeeds, its tests are merged into a single regression suite. The entire suite is run and **must remain green** before proceeding to the next task.
+6. **Dependency Graph**: Described in the plan file; the dispatcher follows this graph.
 
 ### 🧠 Context Budget
 
