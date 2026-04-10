@@ -20,40 +20,39 @@ graph TD
     classDef terminator fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
     classDef error fill:#ffebee,stroke:#c62828,stroke-width:1px
 
-    StartNode(["Новая<br>задача"]) --> SplitDec{"Требуется<br>декомпозиция?"}
-    
-    SplitDec -- "Нет" --> Direct["Прямое<br>выполнение"]
-    Direct --> QueueCheck{"Есть<br>задачи<br>в<br>очереди?"}
-    
-    SplitDec -- "Да" --> Plan1["1.<br>Анализ<br>сути<br>задачи"]
-    
+    StartNode(["Новая задача"]) --> SplitDec{"Требуется декомпозиция?"}
+  
+    SplitDec -- "Нет" --> Direct["Прямое выполнение"]
+    Direct --> QueueCheck{"Есть задачи в очереди?"}
+  
+    SplitDec -- "Да" --> Plan1["1. Анализ сути задачи"]
+  
     subgraph Phase1 ["Фаза 1: Оркестрация и Планирование"]
-        Plan1 --> Plan2["2.<br>Выбор<br>архитектуры"]
-        Plan2 --> Plan3["3.<br>Формирование<br>Плана<br>v1"]
-        Plan3 --> Plan4["4.<br>Создание<br>Prompt<br>Packets"]
-        Plan4 --> Split2Dec{"Нужна<br>ревизия<br>плана?"}
-        Split2Dec -- "Да" --> Plan5["5.<br>Ревизия<br>плана<br>другой<br>моделью"]
-        Plan5 --> Plan6["6.<br>Утверждение<br>списка<br>задач"]
+        Plan1 --> Plan2["2. Выбор архитектуры"]
+        Plan2 --> Plan3["3. Формирование Плана v1"]
+        Plan3 --> Plan4["4. Создание Prompt Packets"]
+        Plan4 --> Split2Dec{"Нужна ревизия плана?"}
+        Split2Dec -- "Да" --> Plan5["5. Ревизия плана другой моделью"]
+        Plan5 --> Plan6["6. Утверждение списка задач"]
         Split2Dec -- "Нет" --> Plan6
     end
-    
+  
     Plan6 --> QueueCheck
-    
+  
     subgraph Phase2 ["Фаза 2: Исполнение и Контроль"]
-        TaskSelect["Выбор<br>следующей<br>подзадачи"]
-        ContextInit["Инициализация<br>свежего<br>контекста"]
-        
+        TaskSelect["Выбор следующей подзадачи"]
+        ContextInit["Инициализация свежего контекста"]
+    
         subgraph SubAgent ["Цикл Субагента: TDD"]
-            direction TB
-            RedPhase["Red:<br>Написание<br>теста"]
-            GreenPhase["Green:<br>Написание<br>кода"]
-            LocalTest{"Локальные<br>тесты<br>пройдены?"}
-            LocalRetry{"><br>10<br>попыток?"}
-            
-            MergeWork["Слияние<br>в<br>рабочую<br>ветку"]
-            GlobalTest{"Тесты<br>проекта<br>пройдены?"}
-            GlobalRetry{"><br>10<br>попыток?"}
-            
+            RedPhase["Red: Написание теста"]
+            GreenPhase["Green: Написание кода"]
+            LocalTest{"Локальные тесты пройдены?"}
+            LocalRetry{"> 10 попыток?"}
+        
+            MergeWork["Слияние в рабочую ветку"]
+            GlobalTest{"Тесты проекта пройдены?"}
+            GlobalRetry{"> 10 попыток?"}
+        
             RedPhase --> GreenPhase
             GreenPhase --> LocalTest
             LocalTest -- "Нет" --> LocalRetry
@@ -64,24 +63,24 @@ graph TD
             GlobalRetry -- "Нет" --> GreenPhase
         end
     end
-    
+  
     QueueCheck -- "Да" --> TaskSelect
     TaskSelect --> ContextInit
     ContextInit --> RedPhase
-    
-    Replan["♻️<br>Re-plan<br>(Смена<br>плана)"]
+  
+    Replan["♻️ Re-plan (Смена плана)"]
     LocalRetry -- "Да" --> Replan
     GlobalRetry -- "Да" --> Replan
     GlobalTest -- "Да" --> QueueCheck
-    
+  
     Replan --> Plan3
-    
-    QueueCheck -- "Нет" --> FinalRegression["Итоговый<br>полный<br>регресс"]
-    
+  
+    QueueCheck -- "Нет" --> FinalRegression["Итоговый полный регресс"]
+  
     subgraph Phase3 ["Фаза 3: Финал"]
-        FinalRegression --> AllTestsSuccess{"Все<br>тесты<br>успешны?"}
+        FinalRegression --> AllTestsSuccess{"Все тесты успешны?"}
         AllTestsSuccess -- "Нет" --> Replan
-        AllTestsSuccess -- "Да" --> FinishNode(["Merge<br>Ready<br>(Успех)"])
+        AllTestsSuccess -- "Да" --> FinishNode(["Merge Ready (Успех)"])
     end
 
     class Direct,Plan1,Plan2,Plan3,Plan4,Plan5,Plan6,TaskSelect,ContextInit,RedPhase,GreenPhase,MergeWork,FinalRegression process
@@ -108,7 +107,7 @@ sequenceDiagram
     User->>Host: Запрос на сложную задачу
     Host->>Host: Анализ и Архитектура
     Host->>Host: Создание Plan.md и Prompt Packets
-    
+  
     alt Режим split2 (Ревизия)
         Host->>Reviewer: План на проверку
         Reviewer-->>Host: Правки и улучшения
@@ -138,21 +137,20 @@ sequenceDiagram
 Диаграмма описывает, какие задачи решает фреймворк для пользователя и агентов.
 
 ```mermaid
-usecaseview
-    actor User as "Пользователь/Разработчик"
-    actor Agent as "AI Агент (Planner)"
-    
-    package "Split-First Framework" {
-        usecase UC1 as "Декомпозиция сложной задачи"
-        usecase UC2 as "Изоляция контекста подзадач"
-        usecase UC3 as "Параллельная ревизия плана (split2)"
-        usecase UC4 as "Гарантия качества через TDD"
-        usecase UC5 as "Контроль регрессии проекта"
-    }
+graph LR
+    User([Пользователь])
+    Agent([AI Агент])
+
+    subgraph Framework ["Split-First Framework"]
+        UC1("Декомпозиция сложной задачи")
+        UC2("Изоляция контекста подзадач")
+        UC3("Ревизия плана split2")
+        UC4("Качество через TDD")
+        UC5("Контроль регрессии")
+    end
 
     User --> UC1
     User --> UC3
-    
     Agent --> UC1
     Agent --> UC2
     Agent --> UC4
