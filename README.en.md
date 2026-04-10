@@ -112,24 +112,23 @@ graph TD
         J --> K["Get next task"]
         K --> L["Launch sub-agent"]
         
-        subgraph "Internal TDD Cycle"
+        subgraph "Internal Sub-agent Cycle (TDD + Regression)"
             L --> M["Local failing test"]
             M --> N["Implementation"]
             N --> O["Local green test"]
-            O --> M
+            O --> P["Merge tests into regression suite"]
+            P --> Q["Run unified regression test (Green)"]
+            Q -- "Retry" --> N
         end
         
-        O --> P["Merge tests into regression suite"]
-        P --> Q["Run unified regression test (Green)"]
+        Q -- "Success" --> R{"Last task?"}
+        R -- "No" --> K
         
-        Q --> R{"Success?"}
-        R -- "Yes" --> S{"Last task?"}
-        S -- "No" --> K
-        R -- "No" --> T["Re-planning"]
+        L -- "Critical error" --> T["Re-planning"]
         T --> F
     end
     
-    S -- "Yes" --> U["Final verification (Suite Green)"]
+    R -- "Yes" --> U["Final verification (Suite Green)"]
     U --> V["Merge / Complete"]
 ```
 
@@ -160,8 +159,8 @@ Full template: `references/subtask-prompt-template.md`.
 1. **Planning**: Before forming the task list, a deep reformulation of the request (essence, detail) and selection of architectural solutions are performed.
 2. **Detailing**: A plan is not just a list, but a set of detailed textual descriptions for each task (Prompt Packets). In `split2` mode, this set is improved as a whole.
 3. **Sequential Cycle**: The main agent runs sub-agents one by one.
-4. **Internal TDD**: A sub-agent within its pass runs a failing test, fixes the code, and achieves test passage.
-5. **Growing Regression**: After a subtask succeeds, its tests are merged into a single regression suite. The entire suite is run and **must remain green** before proceeding to the next task.
+4. **Internal TDD and Regression**: A sub-agent within its pass runs a failing test, fixes the code, and achieves local test passage. After that, it merges its tests into the unified regression suite and achieves the passage of the **entire suite** (Green) before returning the result.
+5. **Growing Regression**: Each successful sub-agent cycle concludes with confirmation that the project as a whole remains operational.
 6. **Dependency Graph**: Described in the plan file; the dispatcher follows this graph.
 
 ### 🧠 Context Budget
