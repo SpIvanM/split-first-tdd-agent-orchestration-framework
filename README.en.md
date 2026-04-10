@@ -107,26 +107,24 @@ graph TD
     I --> J["6. Execution"]
     H -- "No" --> J
     
-    subgraph "Sub-agent Cycle"
-        J --> K["Task"]
-        K --> L["Launch"]
-        
-        subgraph "TDD + Regression"
-            L --> M["Fail Test"]
-            M --> N["Code"]
-            N --> O{"Local Green?"}
-            O -- "No (Retry)" --> N
-            O -- "Max Retries" --> T["Re-plan"]
-            O -- "Yes" --> P["Merge to Regression"]
-            P --> Q{"Project Green?"}
-            Q -- "No (Retry)" --> N
-            Q -- "Max Retries" --> T
-        end
-        
-        Q -- "Yes" --> R{"Complete?"}
-        R -- "No" --> K
-        T --> F
+    J --> K["Task Selection"]
+    K --> L["Context Retrieval"]
+    
+    subgraph "TDD + Regression"
+        L --> M["Fail Test"]
+        M --> N["Code"]
+        N --> O{"Local Green?"}
+        O -- "No (Retry)" --> N
+        O -- "Max Retries" --> T["Re-plan"]
+        O -- "Yes" --> P["Merge to Regression"]
+        P --> Q{"Project Green?"}
+        Q -- "No (Retry)" --> N
+        Q -- "Max Retries" --> T
     end
+    
+    Q -- "Yes" --> R{"Complete?"}
+    R -- "No" --> K
+    T --> F
     
     R -- "Yes" --> U["Final Regression"]
     U --> W{"Success?"}
