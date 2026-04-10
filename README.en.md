@@ -101,7 +101,7 @@ graph TD
     B -- "Yes" --> D["1. Analysis"]
     D --> E["2. Architecture"]
     E --> F["3. Plan v1"]
-    F --> G["4. Task Texts"]
+    F --> G["4. Task<br/>Texts"]
     G --> H{"Split2?"}
     H -- "Yes" --> I["5. Revision"]
     I --> J["6. Execution"]
